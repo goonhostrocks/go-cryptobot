@@ -170,3 +170,97 @@ func TestGetInvoices_Success(t *testing.T) {
 
 	t.Logf("Retrieved %d invoices", len(res.Result.Items))
 }
+
+func TestCheck_Lifecycle(t *testing.T) {
+	client := NewClient("58888:AAPYodtS0zKoIbYe7RDzKGnvMdtxTc6BPWy", "https://testnet-pay.crypt.bot/api")
+
+	// CreateCheck
+	res, err := client.CreateCheck(&CreateCheckRequest{
+		Asset:  "TON",
+		Amount: "0.1",
+	})
+	if err != nil {
+		t.Fatalf("CreateCheck returned error: %v", err)
+	}
+
+	if !res.Ok {
+		t.Logf("CreateCheck returned ok=false (expected if insufficient balance), skipping rest of check lifecycle test.")
+	} else {
+		checkID := res.Result.CheckID
+		t.Logf("Successfully created check %d", checkID)
+
+		// GetChecks
+		resGet, err := client.GetChecks(&GetChecksRequest{
+			Asset:    "TON",
+			Status:   "active",
+			CheckIDs: []int{checkID}, // This hits MarshalJSON
+		})
+		if err != nil {
+			t.Fatalf("GetChecks returned error: %v", err)
+		}
+		if !resGet.Ok {
+			t.Fatalf("GetChecks returned ok=false")
+		}
+		t.Logf("Successfully got %d checks", len(resGet.Result.Items))
+
+		// DeleteCheck
+		resDel, err := client.DeleteCheck(&DeleteCheckRequest{CheckID: checkID})
+		if err != nil {
+			t.Fatalf("DeleteCheck returned error: %v", err)
+		}
+		if !resDel.Ok {
+			t.Fatalf("DeleteCheck returned ok=false")
+		}
+		t.Logf("Successfully deleted check %d", checkID)
+	}
+}
+
+func TestTransfer_Live(t *testing.T) {
+	client := NewClient("58888:AAPYodtS0zKoIbYe7RDzKGnvMdtxTc6BPWy", "https://testnet-pay.crypt.bot/api")
+
+	res, err := client.Transfer(&TransferRequest{
+		UserID:  1, // Invalid user ID or system ID for testnet
+		Asset:   "TON",
+		Amount:  "0.1",
+		SpendID: "test-spend-integration",
+	})
+	if err != nil {
+		t.Fatalf("Transfer returned error: %v", err)
+	}
+	if !res.Ok {
+		t.Logf("Transfer returned ok=false (expected for random test ID / insufficient balance)")
+	} else {
+		t.Logf("Transfer returned ok=true, TransferID: %d", res.Result.TransferID)
+	}
+
+	// GetTransfers
+	resGet, err := client.GetTransfers(&GetTransfersRequest{
+		Asset:       "TON",
+		TransferIDs: []int{1, 2}, // This hits MarshalJSON
+	})
+	if err != nil {
+		t.Fatalf("GetTransfers returned error: %v", err)
+	}
+	if !resGet.Ok {
+		t.Fatalf("GetTransfers returned ok=false")
+	}
+	t.Logf("Successfully got %d transfers", len(resGet.Result.Items))
+}
+
+func TestGetInvoices_WithIDs(t *testing.T) {
+	client := NewClient("58888:AAPYodtS0zKoIbYe7RDzKGnvMdtxTc6BPWy", "https://testnet-pay.crypt.bot/api")
+
+	// This hits MarshalJSON
+	res, err := client.GetInvoices(&GetInvoicesRequest{
+		Asset:      "USDT",
+		InvoiceIDs: []int{1, 2},
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !res.Ok {
+		t.Errorf("expected response status 'ok' to be true")
+	}
+	t.Logf("Retrieved %d invoices via ID", len(res.Result.Items))
+}
