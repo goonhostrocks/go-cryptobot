@@ -11,9 +11,9 @@ type Invoice struct {
 	PaidAsset      string `json:"paid_asset"`      // ​Optional. Cryptocurrency alphabetic code for which the invoice was paid. Available only if currency_type is “fiat” and status is “paid”.
 	PaidAmount     string `json:"paid_amount"`     // ​Optional. Amount of the invoice for which the invoice was paid. Available only if currency_type is “fiat” and status is “paid”.
 	PaidFiatRate   string `json:"paid_fiat_rate"`  // Optional. The rate of the paid_asset valued in the fiat currency. Available only if the value of the field currency_type is “fiat” and the value of the field status is “paid”.
-	AcceptedAssets string `json:"accepted_assets"` // Optional. List of assets which can be used to pay the invoice. Available only if currency_type is “fiat”. Currently, can be “USDT”, “TON”, “BTC”, “ETH”, “LTC”, “BNB”, “TRX” and “USDC” (and “JET” for testnet).
-	FeeAsset       string `json:"fee_asset"`       // Optional. Asset of service fees charged when the invoice was paid. Available only if status is “paid”.
-	FeeAmount      int    `json:"fee_amount"`      // Optional. Amount of service fees charged when the invoice was paid. Available only if status is “paid”.
+	AcceptedAssets []string `json:"accepted_assets"` // Optional. List of assets which can be used to pay the invoice. Available only if currency_type is “fiat”. Currently, can be “USDT”, “TON”, “BTC”, “ETH”, “LTC”, “BNB”, “TRX” and “USDC” (and “JET” for testnet).
+	FeeAsset       string   `json:"fee_asset"`       // Optional. Asset of service fees charged when the invoice was paid. Available only if status is “paid”.
+	FeeAmount      string   `json:"fee_amount"`      // Optional. Amount of service fees charged when the invoice was paid. Available only if status is “paid”.
 
 	// Deprecated: Use FeeAmount or FeeAsset instead.
 	// This field is only available in webhook payloads.
@@ -96,7 +96,7 @@ type ExchangeRate struct {
 
 // AppStats represents app usage statistics.
 type AppStats struct {
-	Volume              float64 `json:"volume"`                // Total volume of paid invoices in USD.
+	Volume              string  `json:"volume"`                // Total volume of paid invoices in USD.
 	Conversion          string  `json:"conversion"`            // Conversion of all created invoices.
 	UniqueUsersCount    int     `json:"unique_users_count"`    // The unique number of users who have paid the invoice.
 	CreatedInvoiceCount int     `json:"created_invoice_count"` // Total created invoice count.

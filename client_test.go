@@ -152,7 +152,7 @@ func TestGetStats_Success(t *testing.T) {
 		t.Errorf("expected response status 'ok' to be true")
 	}
 
-	t.Logf("Retrieved stats, volume: %f", res.Result.Volume)
+	t.Logf("Retrieved stats, volume: %s", res.Result.Volume)
 }
 
 func TestGetInvoices_Success(t *testing.T) {
