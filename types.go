@@ -5,7 +5,7 @@ type Invoice struct {
 	Hash           string `json:"hash"`            // Hash of the invoice.
 	CurrencyType   string `json:"currency_type"`   // Type of the price, can be “crypto” or “fiat”.
 	Asset          string `json:"asset"`           // Optional. Cryptocurrency code. Available only if the value of the field currency_type is “crypto”. Currently, can be “USDT”, “TON”, “BTC”, “ETH”, “LTC”, “BNB”, “TRX” and “USDC” (and “JET” for testnet).
-	Fiat           string `json:"fiat"`            // ​Optional. Fiat currency code. Available only if the value of the field currency_type is “fiat”. Currently one of “USD”, “EUR”, “RUB”, “BYN”, “UAH”, “GBP”, “CNY”, “KZT”, “UZS”, “GEL”, “TRY”, “AMD”, “THB”, “INR”, “BRL”, “IDR”, “AZN”, “AED”, “PLN” and “ILS". Lol, fiat, probably the owner the
+	Fiat           string `json:"fiat"`            // ​Optional. Fiat currency code. Available only if the value of the field currency_type is “fiat”. Currently one of “USD”, “EUR”, “RUB”, “BYN”, “UAH”, “GBP”, “CNY”, “KZT”, “UZS”, “GEL”, “TRY”, “AMD”, “THB”, “INR”, “BRL”, “IDR”, “AZN”, “AED”, “PLN” and “ILS". Lol, fiat, probably the dev has a rusty old 500.
 	Amount         string `json:"amount"`          // Amount of the invoice for which the invoice was created.
 	PaidAsset      string `json:"paid_asset"`      // ​Optional. Cryptocurrency alphabetic code for which the invoice was paid. Available only if currency_type is “fiat” and status is “paid”.
 	PaidAmount     string `json:"paid_amount"`     // ​Optional. Amount of the invoice for which the invoice was paid. Available only if currency_type is “fiat” and status is “paid”.
@@ -90,13 +90,13 @@ type ExchangeRate struct {
 }
 
 type AppStats struct {
-	Volume              int    `json:"volume"`                // Total volume of paid invoices in USD.
-	Conversion          int    `json:"conversion"`            // Conversion of all created invoices.
-	UniqueUsersCount    int    `json:"unique_users_count"`    // The unique number of users who have paid the invoice.
-	CreatedInvoiceCount int    `json:"created_invoice_count"` // Total created invoice count.
-	PaidInvoiceCount    int    `json:"paid_invoice_count"`    // Total paid invoice count.
-	StartAt             string `json:"start_at"`              // The date on which the statistics calculation was started in ISO 8601 format.
-	EndAt               string `json:"end_at"`                // The date on which the statistics calculation was ended in ISO 8601 format.
+	Volume              float64 `json:"volume"`                // Total volume of paid invoices in USD.
+	Conversion          string  `json:"conversion"`            // Conversion of all created invoices.
+	UniqueUsersCount    int     `json:"unique_users_count"`    // The unique number of users who have paid the invoice.
+	CreatedInvoiceCount int     `json:"created_invoice_count"` // Total created invoice count.
+	PaidInvoiceCount    int     `json:"paid_invoice_count"`    // Total paid invoice count.
+	StartAt             string  `json:"start_at"`              // The date on which the statistics calculation was started in ISO 8601 format.
+	EndAt               string  `json:"end_at"`                // The date on which the statistics calculation was ended in ISO 8601 format.
 }
 
 type CreateInvoiceRequest struct {
@@ -116,8 +116,72 @@ type CreateInvoiceRequest struct {
 	ExpiresIn      int    `json:"expires_in,omitempty"`      // Optional. Payment time limit in seconds.
 }
 
+type APIError struct {
+	Code int    `json:"code"`
+	Name string `json:"name"`
+}
+
 type DeleteInvoiceRequest struct {
 	InvoiceID int `json:"invoice_id"` // Invoice ID to be deleted.
+}
+
+type CreateCheckRequest struct {
+	Asset         string `json:"asset"`                     // Cryptocurrency alphabetic code. Supported assets: “USDT”, “TON”, “BTC”, “ETH”, “LTC”, “BNB”, “TRX” and “USDC” (and “JET” for testnet).
+	Amount        string `json:"amount"`                    // Amount of the check in float. For example: 125.50
+	PinToUserID   int    `json:"pin_to_user_id,omitempty"`  // ​Optional. ID of the user who will be able to activate the check.
+	PinToUsername string `json:"pin_to_username,omitempty"` // Optional. A user with the specified username will be able to activate the check.
+}
+
+type DeleteCheckRequest struct {
+	CheckID int `json:"check_id"` // Check ID to be deleted.
+}
+
+type TransferRequest struct {
+	UserID                  int    `json:"user_id"`                             // User ID in Telegram. User must have previously used @CryptoBot (@CryptoTestnetBot for testnet).
+	Asset                   string `json:"asset"`                               // Cryptocurrency alphabetic code. Supported assets: “USDT”, “TON”, “BTC”, “ETH”, “LTC”, “BNB”, “TRX” and “USDC” (and “JET” for testnet).
+	Amount                  string `json:"amount"`                              // Amount of the transfer in float. The minimum and maximum amount limits for each of the supported assets roughly correspond to 1-25000 USD. Use getExchangeRates to convert amounts. For example: 125.50
+	SpendID                 string `json:"spend_id"`                            // Random UTF-8 string unique per transfer for idempotent requests. The same spend_id can be accepted only once from your app. Up to 64 symbols.
+	Comment                 string `json:"comment,omitempty"`                   // Optional. Comment for the transfer. Users will see this comment in the notification about the transfer. Up to 1024 symbols.
+	DisableSendNotification *bool  `json:"disable_send_notification,omitempty"` // Optional. Pass true to not send to the user the notification about the transfer. Defaults to false.
+}
+
+type GetInvoicesRequest struct {
+	Asset      string `json:"asset,omitempty"`  // Optional. Cryptocurrency alphabetic code. Supported assets: “USDT”, “TON”, “BTC”, “ETH”, “LTC”, “BNB”, “TRX” and “USDC” (and “JET” for testnet). Defaults to all currencies.
+	Fiat       string `json:"fiat,omitempty"`   // ​Optional. Fiat currency code. Supported fiat currencies: “USD”, “EUR”, “RUB”, “BYN”, “UAH”, “GBP”, “CNY”, “KZT”, “UZS”, “GEL”, “TRY”, “AMD”, “THB”, “INR”, “BRL”, “IDR”, “AZN”, “AED”, “PLN” and “ILS". Defaults to all currencies.
+	InvoiceIDs []int  `json:"-"`                // ​Optional. List of invoice IDs separated by comma.
+	Status     string `json:"status,omitempty"` // Optional. Status of invoices to be returned. Available statuses: “active” and “paid”. Defaults to all statuses.
+	Offset     *int   `json:"offset,omitempty"` // ​Optional. Offset needed to return a specific subset of invoices. Defaults to 0.
+	Count      *int   `json:"count,omitempty"`  // ​Optional. Number of invoices to be returned. Values between 1-1000 are accepted. Defaults to 100.
+}
+
+type CreateInvoiceResponse struct {
+	Ok     bool    `json:"ok"`
+	Result Invoice `json:"result"`
+}
+
+type DeleteInvoiceResponse struct {
+	Ok     bool `json:"ok"`
+	Result bool `json:"result"`
+}
+
+type CreateCheckResponse struct {
+	Ok     bool  `json:"ok"`
+	Result Check `json:"result"`
+}
+
+type DeleteCheckResponse struct {
+	Ok     bool `json:"ok"`
+	Result bool `json:"result"`
+}
+
+type TransferResponse struct {
+	Ok     bool     `json:"ok"`
+	Result Transfer `json:"result"`
+}
+
+type ErrorResponse struct {
+	Ok    bool     `json:"ok"`
+	Error APIError `json:"error"`
 }
 
 type GetMeResponse struct {
@@ -129,12 +193,74 @@ type GetMeResponse struct {
 	} `json:"result"`
 }
 
-type CreateInvoiceResponse struct {
-	Ok     bool    `json:"ok"`
-	Result Invoice `json:"result"`
+type GetInvoicesResponse struct {
+	Ok     bool `json:"ok"`
+	Result struct {
+		Items []Invoice `json:"items"`
+	} `json:"result"`
 }
 
-type DeleteInvoiceResponse struct {
+type GetChecksRequest struct {
+	Asset    string `json:"asset,omitempty"`  // Optional. Cryptocurrency alphabetic code. Supported assets: “USDT”, “TON”, “BTC”, “ETH”, “LTC”, “BNB”, “TRX” and “USDC” (and “JET” for testnet). Defaults to all currencies.
+	CheckIDs []int  `json:"-"`                // Optional. List of check IDs separated by comma.
+	Status   string `json:"status,omitempty"` // Optional. Status of check to be returned. Available statuses: “active” and “activated”. Defaults to all statuses.
+	Offset   *int   `json:"offset,omitempty"` // Optional. Offset needed to return a specific subset of check. Defaults to 0.
+	Count    *int   `json:"count,omitempty"`  // Optional. Number of check to be returned. Values between 1-1000 are accepted. Defaults to 100.
+}
+
+type GetChecksResponse struct {
 	Ok     bool `json:"ok"`
-	Result bool `json:"result"` // True if the invoice was successfully deleted
+	Result struct {
+		Items []Check `json:"items"`
+	} `json:"result"`
+}
+
+type GetTransfersRequest struct {
+	Asset       string `json:"asset,omitempty"`    // Optional. Cryptocurrency alphabetic code. Supported assets: “USDT”, “TON”, “BTC”, “ETH”, “LTC”, “BNB”, “TRX” and “USDC” (and “JET” for testnet). Defaults to all currencies.
+	TransferIDs []int  `json:"-"`                  // Optional. List of transfer IDs separated by comma.
+	SpendID     string `json:"spend_id,omitempty"` // Optional. Unique UTF-8 transfer string.
+	Offset      *int   `json:"offset,omitempty"`   // Optional. Offset needed to return a specific subset of transfers. Defaults to 0.
+	Count       *int   `json:"count,omitempty"`    // Optional. Number of transfers to be returned. Values between 1-1000 are accepted. Defaults to 100.
+}
+
+type GetTransfersResponse struct {
+	Ok     bool `json:"ok"`
+	Result struct {
+		Items []Transfer `json:"items"`
+	} `json:"result"`
+}
+
+type GetBalanceResponse struct {
+	Ok     bool      `json:"ok"`
+	Result []Balance `json:"result"`
+}
+
+type GetExchangeRatesResponse struct {
+	Ok     bool           `json:"ok"`
+	Result []ExchangeRate `json:"result"`
+}
+
+type Currency struct {
+	IsBlockchain bool   `json:"is_blockchain"`
+	IsStablecoin bool   `json:"is_stablecoin"`
+	IsFiat       bool   `json:"is_fiat"`
+	Name         string `json:"name"`
+	Code         string `json:"code"`
+	URL          string `json:"url,omitempty"`
+	Decimals     int    `json:"decimals"`
+}
+
+type GetCurrenciesResponse struct {
+	Ok     bool       `json:"ok"`
+	Result []Currency `json:"result"`
+}
+
+type GetStatsRequest struct {
+	StartAt string `json:"start_at,omitempty"` // Optional. Date from which start calculating statistics in ISO 8601 format. Defaults is current date minus 24 hours.
+	EndAt   string `json:"end_at,omitempty"`   // Optional. The date on which to finish calculating statistics in ISO 8601 format. Defaults is current date.
+}
+
+type GetStatsResponse struct {
+	Ok     bool     `json:"ok"`
+	Result AppStats `json:"result"`
 }

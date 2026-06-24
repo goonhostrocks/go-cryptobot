@@ -101,7 +101,7 @@ Because developers prefer custom routers like **Fiber** or **Gin** over Go's def
 
 Here is an example using **Fiber**:
 
-```
+```go
 package main
 
 import (  

@@ -94,3 +94,79 @@ func TestInvoice_Lifecycle(t *testing.T) {
 		t.Logf("Successfully deleted invoice with ID: %d", createdInvoiceID)
 	})
 }
+
+func TestGetBalance_Success(t *testing.T) {
+	client := NewClient("58888:AAPYodtS0zKoIbYe7RDzKGnvMdtxTc6BPWy", "https://testnet-pay.crypt.bot/api")
+
+	res, err := client.GetBalance()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !res.Ok {
+		t.Errorf("expected response status 'ok' to be true")
+	}
+
+	t.Logf("Retrieved %d balance records", len(res.Result))
+}
+
+func TestGetExchangeRates_Success(t *testing.T) {
+	client := NewClient("58888:AAPYodtS0zKoIbYe7RDzKGnvMdtxTc6BPWy", "https://testnet-pay.crypt.bot/api")
+
+	res, err := client.GetExchangeRates()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !res.Ok {
+		t.Errorf("expected response status 'ok' to be true")
+	}
+
+	t.Logf("Retrieved %d exchange rates", len(res.Result))
+}
+
+func TestGetCurrencies_Success(t *testing.T) {
+	client := NewClient("58888:AAPYodtS0zKoIbYe7RDzKGnvMdtxTc6BPWy", "https://testnet-pay.crypt.bot/api")
+
+	res, err := client.GetCurrencies()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !res.Ok {
+		t.Errorf("expected response status 'ok' to be true")
+	}
+
+	t.Logf("Retrieved %d currencies", len(res.Result))
+}
+
+func TestGetStats_Success(t *testing.T) {
+	client := NewClient("58888:AAPYodtS0zKoIbYe7RDzKGnvMdtxTc6BPWy", "https://testnet-pay.crypt.bot/api")
+
+	res, err := client.GetStats(&GetStatsRequest{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !res.Ok {
+		t.Errorf("expected response status 'ok' to be true")
+	}
+
+	t.Logf("Retrieved stats, volume: %f", res.Result.Volume)
+}
+
+func TestGetInvoices_Success(t *testing.T) {
+	client := NewClient("58888:AAPYodtS0zKoIbYe7RDzKGnvMdtxTc6BPWy", "https://testnet-pay.crypt.bot/api")
+
+	// Test with no parameters
+	res, err := client.GetInvoices(&GetInvoicesRequest{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !res.Ok {
+		t.Errorf("expected response status 'ok' to be true")
+	}
+
+	t.Logf("Retrieved %d invoices", len(res.Result.Items))
+}
