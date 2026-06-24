@@ -1,5 +1,6 @@
 package gocryptobot
 
+// Invoice represents a Crypto Pay invoice.
 type Invoice struct {
 	InvoiceID      int    `json:"invoice_id"`      // Unique ID for this invoice.
 	Hash           string `json:"hash"`            // Hash of the invoice.
@@ -52,6 +53,7 @@ type Invoice struct {
 	PaidBtnURL      string `json:"paid_btn_url"`     // ​Optional. URL opened using the button.
 }
 
+// Transfer represents a Crypto Pay transfer.
 type Transfer struct {
 	TransferID  int    `json:"transfer_id"`  // Unique ID for this transfer.
 	SpendID     string `json:"spend_id"`     // Unique UTF-8 string.
@@ -63,6 +65,7 @@ type Transfer struct {
 	Comment     string `json:"comment"`      // ​Optional. Comment for this transfer.
 }
 
+// Check represents a Crypto Pay check.
 type Check struct {
 	CheckID     int    `json:"check_id"`      // Unique ID for this check.
 	Hash        string `json:"hash"`          // Hash of the check.
@@ -74,12 +77,14 @@ type Check struct {
 	ActivatedAt string `json:"activated_at"`  // Date the check was activated in ISO 8601 format.
 }
 
+// Balance represents an app balance.
 type Balance struct {
 	CurrencyCode string `json:"currency_code"` // Cryptocurrency alphabetic code. Currently, can be “USDT”, “TON”, “BTC”, “ETH”, “LTC”, “BNB”, “TRX” and “USDC” (and “JET” for testnet).
 	Available    string `json:"available"`     // Total available amount in float.
 	OnHold       string `json:"on_hold"`       // Unavailable amount currently is on hold in float.
 }
 
+// ExchangeRate represents an exchange rate for a currency.
 type ExchangeRate struct {
 	IsValid  bool   `json:"is_valid"`  // ​True, if the received rate is up-to-date.
 	IsCrypto bool   `json:"is_crypto"` // True, if the source is the cryptocurrency.
@@ -89,6 +94,7 @@ type ExchangeRate struct {
 	Rate     string `json:"rate"`      // The current rate of the source asset valued in the target currency.
 }
 
+// AppStats represents app usage statistics.
 type AppStats struct {
 	Volume              float64 `json:"volume"`                // Total volume of paid invoices in USD.
 	Conversion          string  `json:"conversion"`            // Conversion of all created invoices.
@@ -99,6 +105,7 @@ type AppStats struct {
 	EndAt               string  `json:"end_at"`                // The date on which the statistics calculation was ended in ISO 8601 format.
 }
 
+// CreateInvoiceRequest contains parameters for creating an invoice.
 type CreateInvoiceRequest struct {
 	CurrencyType   string `json:"currency_type,omitempty"`   // Optional. "crypto" or "fiat". Defaults to crypto.
 	Asset          string `json:"asset,omitempty"`           // Optional. Required if currency_type is "crypto".
@@ -116,15 +123,18 @@ type CreateInvoiceRequest struct {
 	ExpiresIn      int    `json:"expires_in,omitempty"`      // Optional. Payment time limit in seconds.
 }
 
+// APIError represents an error returned by the Crypto Pay API.
 type APIError struct {
 	Code int    `json:"code"`
 	Name string `json:"name"`
 }
 
+// DeleteInvoiceRequest contains parameters for deleting an invoice.
 type DeleteInvoiceRequest struct {
 	InvoiceID int `json:"invoice_id"` // Invoice ID to be deleted.
 }
 
+// CreateCheckRequest contains parameters for creating a check.
 type CreateCheckRequest struct {
 	Asset         string `json:"asset"`                     // Cryptocurrency alphabetic code. Supported assets: “USDT”, “TON”, “BTC”, “ETH”, “LTC”, “BNB”, “TRX” and “USDC” (and “JET” for testnet).
 	Amount        string `json:"amount"`                    // Amount of the check in float. For example: 125.50
@@ -132,10 +142,12 @@ type CreateCheckRequest struct {
 	PinToUsername string `json:"pin_to_username,omitempty"` // Optional. A user with the specified username will be able to activate the check.
 }
 
+// DeleteCheckRequest contains parameters for deleting a check.
 type DeleteCheckRequest struct {
 	CheckID int `json:"check_id"` // Check ID to be deleted.
 }
 
+// TransferRequest contains parameters for transferring coins to a user.
 type TransferRequest struct {
 	UserID                  int    `json:"user_id"`                             // User ID in Telegram. User must have previously used @CryptoBot (@CryptoTestnetBot for testnet).
 	Asset                   string `json:"asset"`                               // Cryptocurrency alphabetic code. Supported assets: “USDT”, “TON”, “BTC”, “ETH”, “LTC”, “BNB”, “TRX” and “USDC” (and “JET” for testnet).
@@ -145,6 +157,7 @@ type TransferRequest struct {
 	DisableSendNotification *bool  `json:"disable_send_notification,omitempty"` // Optional. Pass true to not send to the user the notification about the transfer. Defaults to false.
 }
 
+// GetInvoicesRequest contains parameters for retrieving invoices.
 type GetInvoicesRequest struct {
 	Asset      string `json:"asset,omitempty"`  // Optional. Cryptocurrency alphabetic code. Supported assets: “USDT”, “TON”, “BTC”, “ETH”, “LTC”, “BNB”, “TRX” and “USDC” (and “JET” for testnet). Defaults to all currencies.
 	Fiat       string `json:"fiat,omitempty"`   // ​Optional. Fiat currency code. Supported fiat currencies: “USD”, “EUR”, “RUB”, “BYN”, “UAH”, “GBP”, “CNY”, “KZT”, “UZS”, “GEL”, “TRY”, “AMD”, “THB”, “INR”, “BRL”, “IDR”, “AZN”, “AED”, “PLN” and “ILS". Defaults to all currencies.
@@ -154,6 +167,7 @@ type GetInvoicesRequest struct {
 	Count      *int   `json:"count,omitempty"`  // ​Optional. Number of invoices to be returned. Values between 1-1000 are accepted. Defaults to 100.
 }
 
+// CreateInvoiceResponse is the response from CreateInvoice.
 type CreateInvoiceResponse struct {
 	Ok     bool    `json:"ok"`
 	Result Invoice `json:"result"`
@@ -179,6 +193,7 @@ type TransferResponse struct {
 	Result Transfer `json:"result"`
 }
 
+// ErrorResponse represents an error response.
 type ErrorResponse struct {
 	Ok    bool     `json:"ok"`
 	Error APIError `json:"error"`
